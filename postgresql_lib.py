@@ -5,6 +5,7 @@
 
 import psycopg2
 import os
+import platform
 
 
 
@@ -32,12 +33,12 @@ class postgresql_database:
 			On commence par pinguer la db
 		"""
 		# Ping de la db
-		if "indows" in get_os(): # Pas de premier w comme ça qu'il soit maj ou min ça ne change rien
+		if "indows" in platform.system(): # Pas de premier w comme ça qu'il soit maj ou min ça ne change rien
 			command = "ping -n 1 "
 		else:
 			command = "ping -c 1 "
 		# Si le ping ne passe par on s'arrête là
-		if os.system(command + self.db_server) != 0:
+		if os.system(command + self.host) != 0:
 			return False
 		# Si le ping est passé on essaie de se connecter à la db
 		self.db = psycopg2.connect(host = self.host, port = self.port, database = self.database, user = self.user, password = self.password, sslmode = self.sslmode, options = self.options)
@@ -52,6 +53,7 @@ class postgresql_database:
 
 	def open(self):
 		""" Méthode pour créer un curseur """
+		self.connect()
 		# On essaye de fermer le curseur avant d'en recréer un 
 		try:
 			self.cursor.close()
@@ -75,6 +77,7 @@ class postgresql_database:
 		if commit:
 			self.db.commit()
 		self.cursor.close()
+		self.disconnect()
 		
 
 
