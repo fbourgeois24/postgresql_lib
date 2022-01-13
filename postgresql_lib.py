@@ -6,6 +6,7 @@
 import psycopg2
 import os
 import platform
+from pythonping import ping #Installer avec 'pip install pythonping'
 
 
 
@@ -33,12 +34,15 @@ class postgresql_database:
 			On commence par pinguer la db
 		"""
 		# Ping de la db
-		if "indows" in platform.system(): # Pas de premier w comme ça qu'il soit maj ou min ça ne change rien
-			command = "ping -n 1 "
-		else:
-			command = "ping -c 1 "
-		# Si le ping ne passe par on s'arrête là
-		if os.system(command + self.host) != 0:
+		# if "indows" in platform.system(): # Pas de premier w comme ça qu'il soit maj ou min ça ne change rien
+		# 	command = "ping -n 1 "
+		# 	redirect = ""
+		# else:
+		# 	command = "ping -c 1 "
+		# 	redirect = " >/dev/null"
+		# # Si le ping ne passe par on s'arrête là
+		# if os.system(command + self.host + redirect) != 0:
+		if "Request timed out" in ping(self.host, count=1):
 			return False
 		# Si le ping est passé on essaie de se connecter à la db
 		self.db = psycopg2.connect(host = self.host, port = self.port, database = self.database, user = self.user, password = self.password, sslmode = self.sslmode, options = self.options)
@@ -101,6 +105,10 @@ class postgresql_database:
 					value = self.fetchall()
 				elif fetch == "one":
 					value = self.fetchone()
+				elif fetch == "single":
+					value = self.fetchone()
+					if value is not None:
+						value = value[0]
 				else:
 					raise ValueError("Wrong fetch type")
 				self.close()
