@@ -55,9 +55,10 @@ class postgresql_database:
 		""" Méthode pour déconnecter la db """
 		self.db.close()
 
-	def open(self):
+	def open(self, auto_connect=True):
 		""" Méthode pour créer un curseur """
-		self.connect()
+		if auto_connect:
+			self.connect()
 		# On essaye de fermer le curseur avant d'en recréer un 
 		try:
 			self.cursor.close()
@@ -75,13 +76,14 @@ class postgresql_database:
 		self.db.commit()
 
 
-	def close(self, commit = False):
+	def close(self, commit = False, auto_connect=True):
 		""" Méthode pour détruire le curseur, avec ou sans commit """
 		# Si commit demandé à la fermeture
 		if commit:
 			self.db.commit()
 		self.cursor.close()
-		self.disconnect()
+		if auto_connect:
+			self.disconnect()
 		
 
 
@@ -90,14 +92,14 @@ class postgresql_database:
 		self.cursor.execute(query, params)
 
 
-	def exec(self, query, params = None, fetch = "all"):
+	def exec(self, query, params = None, fetch = "all", auto_connect=True):
 		""" Méthode pour exécuter une requête et qui ouvre et ferme  la db automatiquement """
 		# Détermination du commit
 		if not "SELECT" in query[:20]:
 			commit = True
 		else:
 			commit = False
-		if self.open():
+		if self.open(auto_connect=auto_connect):
 			self.cursor.execute(query, params)
 			# Si pas de commit ce sera une récupération
 			if not commit or "RETURNING" in query:	
@@ -111,7 +113,7 @@ class postgresql_database:
 						value = value[0]
 				else:
 					raise ValueError("Wrong fetch type")
-				self.close()
+				self.close(auto_connect=auto_connect)
 				return value
 			else:
 				self.close(commit=commit)
