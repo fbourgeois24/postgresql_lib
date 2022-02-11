@@ -111,6 +111,9 @@ class postgresql_database:
 					value = self.fetchone()
 					if value is not None:
 						value = value[0]
+				elif fetch == 'list':
+					# On renvoie une liste composée du premier élément de chaque ligne
+					value = [item[0] for item in self.fetchall()]	
 				else:
 					raise ValueError("Wrong fetch type")
 				self.close(auto_connect=auto_connect)
