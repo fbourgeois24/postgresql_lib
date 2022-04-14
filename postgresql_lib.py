@@ -4,6 +4,7 @@
 """
 
 import psycopg2
+import psycopg2.extras
 import os
 import platform
 from pythonping import ping #Installer avec 'pip install pythonping'
@@ -55,7 +56,7 @@ class postgresql_database:
 		""" Méthode pour déconnecter la db """
 		self.db.close()
 
-	def open(self, auto_connect=True):
+	def open(self, auto_connect=True, fetch_type='tuple'):
 		""" Méthode pour créer un curseur """
 		if auto_connect:
 			self.connect()
@@ -64,7 +65,14 @@ class postgresql_database:
 			self.cursor.close()
 		except:
 			pass
-		self.cursor = self.db.cursor()
+
+		if fetch_type == 'tuple':
+			self.cursor = self.db.cursor()
+		elif fetch_type == 'dict':
+			self.cursor = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+		else:
+			raise ValueError("Incorrect fetch_type")
+
 		if self.cursor is not None:
 			return True
 		else:
@@ -92,14 +100,14 @@ class postgresql_database:
 		self.cursor.execute(query, params)
 
 
-	def exec(self, query, params = None, fetch = "all", auto_connect=True):
+	def exec(self, query, params = None, fetch = "all", auto_connect=True, fetch_type='tuple'):
 		""" Méthode pour exécuter une requête et qui ouvre et ferme  la db automatiquement """
 		# Détermination du commit
 		if not "SELECT" in query[:20]:
 			commit = True
 		else:
 			commit = False
-		if self.open(auto_connect=auto_connect):
+		if self.open(auto_connect=auto_connect, fetch_type=fetch_type):
 			self.cursor.execute(query, params)
 			# Si pas de commit ce sera une récupération
 			if not commit or "RETURNING" in query:	
