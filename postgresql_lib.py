@@ -97,28 +97,21 @@ class postgresql_database:
 
 	def execute(self, query, params = None):
 		""" Méthode pour exécuter une requête mais qui gère les drop de curseurs """
-		# Si 'select' en début de query, on le remplace par 'SELECT' sinon la requête ne retourne rien
-		try:
-			index = query[:10].lower().index("select")
-		except ValueError:
-			pass
-		else:
-			query = query[:index] + "SELECT" + query[index+6:]
-
 		self.cursor.execute(query, params)
 
 
 	def exec(self, query, params = None, fetch = "all", auto_connect=True, fetch_type='tuple'):
 		""" Méthode pour exécuter une requête et qui ouvre et ferme  la db automatiquement """
 		# Détermination du commit
-		if not "SELECT" in query[:20]:
+		if not "SELECT" in query.upper()[:20]:
 			commit = True
 		else:
 			commit = False
+		print(commit)
 		if self.open(auto_connect=auto_connect, fetch_type=fetch_type):
 			self.execute(query, params)
 			# Si pas de commit ce sera une récupération
-			if not commit or "RETURNING" in query:	
+			if not commit:	
 				if fetch == "all":
 					value = self.fetchall()
 				elif fetch == "one":
