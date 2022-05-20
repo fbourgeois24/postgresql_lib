@@ -68,7 +68,7 @@ class postgresql_database:
 
 		if fetch_type == 'tuple':
 			self.cursor = self.db.cursor()
-		elif fetch_type == 'dict':
+		elif fetch_type in ('dict', 'dict_name'):
 			self.cursor = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 		else:
 			raise ValueError("Incorrect fetch_type")
@@ -111,17 +111,29 @@ class postgresql_database:
 			self.execute(query, params)
 			# Si pas de commit ce sera une récupération
 			if not commit:	
+				# S'il faut récupérer les titres
+				if fetch_type == "dict_name":
+					fetch_title = True
+				else:
+					fetch_title = False
+				# Type de récupération des données
 				if fetch == "all":
 					value = self.fetchall()
+					if fetch_title:
+						value = self.extract_title(value, 'all')
 				elif fetch == "one":
 					value = self.fetchone()
+					if fetch_title:
+						value = self.extract_title(value, 'one')
 				elif fetch == "single":
 					value = self.fetchone()
-					if value is not None:
+					if fetch_title:
+						value = self.extract_title(value, 'single')
+					elif value is not None:
 						value = value[0]
 				elif fetch == 'list':
 					# On renvoie une liste composée du premier élément de chaque ligne
-					value = [item[0] for item in self.fetchall()]	
+					value = [item[0] for item in self.fetchall()]
 				else:
 					raise ValueError("Wrong fetch type")
 				self.close(auto_connect=auto_connect)
@@ -150,8 +162,42 @@ class postgresql_database:
 		return str(date.split("/")[2]) + "-" + str(date.split("/")[1] + "-" + str(date.split("/")[0]))
 
 
+	def replace_none_list(self, liste):
+		""" Remplacer les None contenus dans la liste par une string vide """
+		# On regarde si c'est une liste à un ou deux niveaux
+		level = 1
+		if type(liste[0]) == list:
+			level = 2
 
+		for seq, item in enumerate(liste):
+			if level == 1:
+				if item == None:
+					liste[seq] = ""
+			elif level == 2:
+				for sub_seq, sub_item in enumerate(item):
+					if sub_item == None:
+						liste[seq][sub_seq] = ""
 
+		return liste
+
+	def extract_title(self, value, fetch):
+		""" On extrait les titres du résultat et on renvoie le bon type de donnée en fonction du fetch 
+			on renvoie une liste dont le premier élément sera une liste avec les titres des colonnes
+			et le 2e élément sera une liste avec les données
+		"""
+		result = []
+
+		if fetch == "all":
+			result.append(value[0].keys())
+			result.append(self.replace_none_list([list(row.values()) for row in value]))
+		elif fetch == "one":
+			result.append(value.keys())
+			result.append(self.replace_none_list(list(value.values())))
+		elif fetch == "single":
+			result.append(list(value.keys())[0])
+			result.append(self.replace_none_list(list(value.values()))[0])
+
+		return result
 
 
 
