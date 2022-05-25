@@ -1,1 +1,2 @@
 pythonping
+psycopg2-binary

@@ -66,7 +66,7 @@ class postgresql_database:
 		except:
 			pass
 
-		if fetch_type == 'tuple':
+		if fetch_type in ('tuple', 'list'):
 			self.cursor = self.db.cursor()
 		elif fetch_type in ('dict', 'dict_name'):
 			self.cursor = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -137,6 +137,12 @@ class postgresql_database:
 				else:
 					raise ValueError("Wrong fetch type")
 				self.close(auto_connect=auto_connect)
+				# Si fetch_type == 'list' on transforme le tuple en liste
+				if fetch_type == "list":
+					if fetch == "all":
+						value = [list(item) for item in value]
+					elif fetch in ("one", "single"):
+						value = list(value)
 				return value
 			else:
 				self.close(commit=commit)
