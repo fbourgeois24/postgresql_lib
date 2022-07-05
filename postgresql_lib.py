@@ -15,10 +15,19 @@ import logging as log
 class postgresql_database:
 	""" Classe pour la gestion de la DB """
 
-	def __init__(self, db_name, db_server, db_port="5432", db_user="postgres", db_password = "", GUI=False, sslmode="allow", options = ""):
+	def __init__(self, db_name=None, db_server=None, db_port="5432", db_user="postgres", db_password = "", GUI=False, sslmode="allow", options = "", config=None):
 		""" sslmode | valeurs possibles: disable, allow, prefer, require, verify-ca, verify-full 
 			options peut servir à chercher dans un schéma particulier : options="-c search_path=dbo,public")
+			config: Premet de passer toute la config via un dictionnaire. Les clés sont:
+				- name
+    			- addr
+    			- port
+    			- user
+    			- passwd
 		"""
+		if (db_name is None or db_server is None) and config is None:
+			raise AttributeError("Vous devez spécifier le db_name et le db_server ou passer une config")
+
 		self.db = None
 		self.cursor = None
 		self.database = db_name
@@ -29,6 +38,13 @@ class postgresql_database:
 		self.GUI = GUI
 		self.sslmode = sslmode
 		self.options = options
+
+		if config is not None:
+			self.database = config.get("name")
+			self.host = config.get("addr")
+			self.port = config.get("port")
+			self.user = config.get("user")
+			self.password = config.get("passwd")
 
 
 	def connect(self):
