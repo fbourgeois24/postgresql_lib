@@ -45,6 +45,8 @@ class postgresql_database:
 			self.port = config.get("port")
 			self.user = config.get("user")
 			self.password = config.get("passwd")
+			self.sslmode = config.get("sslmode", "allow")
+			self.options = config.get("options", "")
 
 
 	def connect(self):
