@@ -228,7 +228,14 @@ class postgresql_database:
 
 		return result
 
+	def __enter__(self):
+		""" Ouverture avec with """
+		self.connect()
+		return self
 
+	def __exit__(self, *args, **kwargs):
+		""" Fermeture avec with """
+		self.disconnect()
 
 
 
