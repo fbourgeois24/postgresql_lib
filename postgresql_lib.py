@@ -122,7 +122,7 @@ class postgresql_database:
 	def exec(self, query, params = None, fetch = "all", auto_connect=True, fetch_type='tuple'):
 		""" Méthode pour exécuter une requête et qui ouvre et ferme  la db automatiquement """
 		# Détermination du commit
-		if not "SELECT" in query.upper()[:20]:
+		if not "SELECT" in query.upper()[:20] or fetch == None:
 			commit = True
 		else:
 			commit = False
