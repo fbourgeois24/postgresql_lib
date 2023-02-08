@@ -164,7 +164,7 @@ class postgresql_database:
 						value = list(value)
 				return value
 			else:
-				self.close(commit=commit)
+				self.close(commit=commit, auto_connect=auto_connect)
 		else:
 			raise AttributeError("Erreur de création du curseur pour l'accès à la db")
 
