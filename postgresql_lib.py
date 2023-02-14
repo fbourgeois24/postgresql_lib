@@ -119,7 +119,7 @@ class postgresql_database:
 		self.cursor.execute(query, params)
 
 
-	def exec(self, query, params = None, fetch = "all", auto_connect=True, fetch_type='tuple'):
+	def exec(self, query, params = None, fetch = "", auto_connect=True, fetch_type='tuple'):
 		""" Méthode pour exécuter une requête et qui ouvre et ferme  la db automatiquement """
 		# Détermination du commit
 		if not "SELECT" in query.upper()[:20] or fetch == None:
@@ -129,7 +129,7 @@ class postgresql_database:
 		if self.open(auto_connect=auto_connect, fetch_type=fetch_type):
 			self.execute(query, params)
 			# Si pas de commit ce sera une récupération
-			if not commit:	
+			if not commit or fetch != "":	
 				# S'il faut récupérer les titres
 				if fetch_type == "dict_name":
 					fetch_title = True
@@ -155,7 +155,7 @@ class postgresql_database:
 					value = [item[0] for item in self.fetchall()]
 				else:
 					raise ValueError("Wrong fetch type")
-				self.close(auto_connect=auto_connect)
+				self.close(commit=commit, auto_connect=auto_connect)
 				# Si fetch_type == 'list' on transforme le tuple en liste
 				if fetch_type == "list":
 					if fetch == "all":
