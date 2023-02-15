@@ -126,6 +126,8 @@ class postgresql_database:
 			commit = True
 		else:
 			commit = False
+		if not commit and fetch == "":
+			fetch = 'all'
 		if self.open(auto_connect=auto_connect, fetch_type=fetch_type):
 			self.execute(query, params)
 			# Si pas de commit ce sera une récupération
