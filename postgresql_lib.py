@@ -8,7 +8,7 @@ import psycopg2.extras
 import os
 import platform
 from pythonping import ping #Installer avec 'pip install pythonping'
-import logging as log
+# import logging as log
 
 
 
@@ -217,12 +217,12 @@ class postgresql_database:
 		if fetch == "all":
 			# Si pas de données renvoyées
 			if value != []:
-				result.append(value[0].keys())
+				result.append(list(value[0].keys()))
 				result.append(self.replace_none_list([list(row.values()) for row in value]))
 			else:
 				result = value
 		elif fetch == "one":
-			result.append(value.keys())
+			result.append(list(value.keys()))
 			result.append(self.replace_none_list(list(value.values())))
 		elif fetch == "single":
 			result.append(list(value.keys())[0])
